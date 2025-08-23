@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diário do Ermo</title>
+    <meta name="theme-color" content="#0a0a0a">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Tela inicial com livro fechado -->
+        <div class="cover-screen" id="cover-screen">
+            <div class="book-cover" id="book-cover">
+                <div class="cover-title">Diaremo</div>
+                <div class="cover-subtitle">Seu refúgio para reflexões</div>
+                <div class="cover-decoration"></div>
+                <div class="cover-click-hint">Clique para abrir</div>
+            </div>
+        </div>
+
+        <!-- Interface principal do diário -->
+        <div class="diary-interface hidden" id="diary-interface">
+            <header class="header">
+                <div class="character">
+                    <div class="character-head">
+                        <div class="character-eyes">
+                            <div class="eye"></div>
+                            <div class="eye"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="nav-container">
+                    <div class="nav-options">
+                        <button class="nav-btn" id="btn-agenda"><i class="fas fa-calendar-days"></i> Agenda</button>
+                        <button class="nav-btn" id="btn-backup"><i class="fas fa-download"></i> Backup</button>
+                        <button class="nav-btn" id="btn-restore"><i class="fas fa-upload"></i> Restaurar</button>
+                        <button class="nav-btn" id="btn-settings"><i class="fas fa-gear"></i> Configurações</button>
+                    </div>
+                </div>
+            </header>
+            
+            <main class="book-container">
+                <div class="book">
+                    <div class="page left-page">
+                        <div class="page-content">
+                            <div class="page-date" id="left-date">15 de Junho de 2023</div>
+                            <div class="page-title" id="left-title">Reflexões Noturnas</div>
+                            <div class="page-text" id="left-text"></div>
+                            <div class="page-number">1</div>
+                        </div>
+                    </div>
+                    
+                    <div class="page right-page">
+                        <div class="page-content">
+                            <div class="page-date" id="current-date">Quinta-feira, 15 de Junho de 2023</div>
+                            <input type="text" class="page-title-input" id="page-title" placeholder="Título da entrada">
+                            <textarea class="page-textarea" id="diary-entry" placeholder="Escreva aqui suas reflexões..."></textarea>
+                            <div class="page-actions">
+                                <button class="page-btn" id="btn-lock"><i class="fas fa-lock"></i> Travar Página</button>
+                                <button class="page-btn" id="btn-save"><i class="fas fa-save"></i> Salvar</button>
+                            </div>
+                            <div class="page-number">2</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="book-controls">
+                    <button class="control-btn" id="btn-prev"><i class="fas fa-chevron-left"></i> Anterior</button>
+                    <button class="control-btn" id="btn-next">Próximo <i class="fas fa-chevron-right"></i></button>
+                </div>
+            </main>
+            
+            <div class="save-status" id="save-status"></div>
+        </div>
+
+        <!-- Modal de Agenda -->
+        <div class="modal" id="agenda-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Agenda - <span id="agenda-month">Agosto 2025</span></h2>
+                    <div>
+                        <button class="btn" id="btn-prev-month"><i class="fas fa-chevron-left"></i></button>
+                        <button class="btn" id="btn-next-month"><i class="fas fa-chevron-right"></i></button>
+                        <button class="btn" id="btn-close-agenda">Fechar</button>
+                    </div>
+                </div>
+                <div class="calendar-grid" id="calendar-grid">
+                    <!-- Gerado via JavaScript -->
+                </div>
+                <div class="event-details" id="event-details">
+                    <h3>Detalhes do Dia</h3>
+                    <div id="day-events"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de Configurações -->
+        <div class="modal" id="settings-modal">
+            <div class="modal-content">
+                <h2>Configurações</h2>
+                <div class="setting-group">
+                    <label for="auto-save">Salvamento automático:</label>
+                    <select id="auto-save">
+                        <option value="30000">30 segundos</option>
+                        <option value="60000">1 minuto</option>
+                        <option value="300000">5 minutos</option>
+                        <option value="0">Desativado</option>
+                    </select>
+                </div>
+                <div class="setting-group">
+                    <label for="theme">Tema:</label>
+                    <select id="theme">
+                        <option value="gothic">Gótico</option>
+                        <option value="dark">Escuro</option>
+                        <option value="sepia">Sépia</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-primary" id="btn-save-settings">Salvar</button>
+                    <button class="btn" id="btn-close-settings">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
