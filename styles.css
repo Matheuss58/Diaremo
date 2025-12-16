@@ -10,7 +10,6 @@
     --old-paper: #e6d8b9;
     --border: #3a3a3a;
     --shadow: rgba(0, 0, 0, 0.7);
-    --page-width: 800px;
 }
 
 * {
@@ -28,14 +27,6 @@ body {
         radial-gradient(circle at 10% 20%, rgba(28, 28, 28, 0.5) 0%, transparent 20%),
         radial-gradient(circle at 90% 80%, rgba(28, 28, 28, 0.5) 0%, transparent 20%),
         url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23333333' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
-}
-
-.app-container {
-    max-width: 100%;
-    margin: 0 auto;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
 }
 
 /* Capa do livro */
@@ -112,30 +103,30 @@ body {
 
 /* Interface do diário */
 .diary-interface {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    padding: 1rem;
+    padding: 20px;
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 20px;
+    grid-template-areas: 
+        "character options"
+        "diary diary";
 }
 
 .hidden {
     display: none;
 }
 
-/* Cabeçalho com personagem */
-.header {
-    display: flex;
-    align-items: flex-start;
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 1.5rem;
+/* Personagem */
+.character-container {
+    grid-area: character;
 }
 
 .character {
     width: 80px;
     height: 80px;
     position: relative;
-    margin-right: 1.5rem;
 }
 
 .character-head {
@@ -170,76 +161,45 @@ body {
     98% { transform: scaleY(0.1); }
 }
 
-/* Navegação */
-.nav-options {
+/* Opções */
+.options-container {
+    grid-area: options;
     display: flex;
+    gap: 10px;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
+    align-items: flex-start;
 }
 
-.nav-btn {
+.option-btn {
     background-color: var(--bg-secondary);
     color: var(--text-secondary);
     border: 1px solid var(--border);
-    padding: 0.5rem 1rem;
+    padding: 10px 15px;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.3s;
     font-size: 0.9rem;
+    white-space: nowrap;
 }
 
-.nav-btn:hover {
+.option-btn:hover {
     background-color: var(--accent);
     color: var(--text-primary);
 }
 
-/* Livro e páginas */
-.book-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 2rem;
-}
-
-.book {
-    display: flex;
-    width: var(--page-width);
-    max-width: 100%;
-    height: 500px;
-    perspective: 2000px;
-    margin-bottom: 1rem;
-}
-
-.page {
-    flex: 1;
+/* Diário */
+.diary-container {
+    grid-area: diary;
     background-color: var(--old-paper);
-    border: 1px solid #aaa;
-    box-shadow: 0 0 10px var(--shadow);
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 4px 20px var(--shadow);
+    color: #333;
     position: relative;
     overflow: hidden;
 }
 
-.left-page {
-    border-radius: 10px 0 0 10px;
-    border-right: 1px solid #999;
-}
-
-.right-page {
-    border-radius: 0 10px 10px 0;
-    border-left: 1px solid #999;
-}
-
-.page-content {
-    padding: 1.5rem;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-}
-
-.page-content::before {
+.diary-container::before {
     content: "";
     position: absolute;
     top: 0;
@@ -252,110 +212,78 @@ body {
     pointer-events: none;
 }
 
-.page-date {
-    font-size: 0.9rem;
+.diary-header {
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding-bottom: 10px;
+}
+
+.diary-date {
+    font-size: 1.2rem;
     color: #666;
-    margin-bottom: 0.5rem;
+    margin-bottom: 10px;
 }
 
-.page-title {
-    font-size: 1.5rem;
+.diary-title {
+    font-size: 1.8rem;
     font-weight: bold;
-    margin-bottom: 1rem;
     color: #333;
-}
-
-.page-title-input {
     background: transparent;
     border: none;
-    border-bottom: 1px dashed #999;
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
-    color: #333;
-    padding: 0.25rem 0;
     width: 100%;
+    padding: 5px 0;
+    border-bottom: 2px dashed #999;
 }
 
-.page-title-input:focus {
+.diary-title:focus {
     outline: none;
-    border-bottom: 1px solid #666;
+    border-bottom: 2px solid #666;
 }
 
-.page-text {
-    flex: 1;
-    color: #333;
-    line-height: 1.6;
-    overflow-y: auto;
+.diary-content {
+    margin-bottom: 20px;
 }
 
-.page-textarea {
-    flex: 1;
+.diary-textarea {
+    width: 100%;
+    min-height: 300px;
     background: transparent;
     border: none;
     resize: none;
     color: #333;
     line-height: 1.6;
     font-family: 'Times New Roman', serif;
-    font-size: 1rem;
+    font-size: 1.1rem;
 }
 
-.page-textarea:focus {
+.diary-textarea:focus {
     outline: none;
 }
 
-.page-actions {
+.diary-actions {
     display: flex;
-    gap: 0.5rem;
-    margin-top: 1rem;
+    align-items: center;
+    gap: 15px;
 }
 
-.page-btn {
+.action-btn {
     background-color: rgba(139, 0, 0, 0.1);
     color: #8b0000;
     border: 1px solid rgba(139, 0, 0, 0.3);
-    padding: 0.5rem 1rem;
+    padding: 8px 15px;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.3s;
 }
 
-.page-btn:hover {
+.action-btn:hover {
     background-color: rgba(139, 0, 0, 0.2);
 }
 
-.page-number {
-    position: absolute;
-    bottom: 10px;
-    right: 15px;
-    color: #999;
-    font-size: 0.8rem;
-}
-
-.book-controls {
-    display: flex;
-    gap: 1rem;
-}
-
-.control-btn {
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
-    border: 1px solid var(--border);
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.control-btn:hover {
-    background-color: var(--accent);
-}
-
 .save-status {
-    text-align: center;
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    height: 1.2rem;
+    color: #666;
+    font-style: italic;
+    margin-left: auto;
 }
 
 /* Modal de agenda */
@@ -375,7 +303,7 @@ body {
 .modal-content {
     background-color: var(--bg-secondary);
     border-radius: 8px;
-    padding: 2rem;
+    padding: 20px;
     width: 90%;
     max-width: 800px;
     max-height: 90vh;
@@ -387,17 +315,36 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.calendar-container {
+    margin-bottom: 20px;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-bottom: 10px;
+    text-align: center;
+    font-weight: bold;
 }
 
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    gap: 5px;
 }
 
-.calendar-cell {
+.calendar-day {
     aspect-ratio: 1;
     background-color: var(--bg-tertiary);
     border-radius: 4px;
@@ -410,11 +357,11 @@ body {
     transition: all 0.3s;
 }
 
-.calendar-cell:hover {
+.calendar-day:hover {
     background-color: var(--accent);
 }
 
-.calendar-cell.has-entry::after {
+.calendar-day.has-entry::after {
     content: "";
     width: 8px;
     height: 8px;
@@ -424,47 +371,52 @@ body {
     bottom: 5px;
 }
 
-.calendar-cell.current-day {
+.calendar-day.current-day {
     border: 2px solid var(--accent);
+}
+
+.calendar-day.other-month {
+    opacity: 0.4;
 }
 
 .event-details {
     background-color: var(--bg-tertiary);
     border-radius: 4px;
-    padding: 1rem;
+    padding: 15px;
 }
 
-/* Configurações */
-.setting-group {
-    margin-bottom: 1rem;
+/* Formulários */
+.form-group {
+    margin-bottom: 15px;
 }
 
-.setting-group label {
+.form-group label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: 5px;
 }
 
-.setting-group select {
+.form-group input,
+.form-group textarea {
     width: 100%;
-    padding: 0.5rem;
+    padding: 8px;
     background-color: var(--bg-tertiary);
     color: var(--text-primary);
     border: 1px solid var(--border);
     border-radius: 4px;
 }
 
-.modal-actions {
+.form-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: 10px;
     justify-content: flex-end;
 }
 
-/* Utilitários */
+/* Botões */
 .btn {
     background-color: var(--bg-tertiary);
     color: var(--text-primary);
     border: 1px solid var(--border);
-    padding: 0.5rem 1rem;
+    padding: 8px 15px;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.3s;
@@ -478,46 +430,59 @@ body {
     opacity: 0.9;
 }
 
-/* Responsividade */
-@media (max-width: 900px) {
-    .book {
-        flex-direction: column;
-        height: auto;
-    }
-    
-    .page {
-        min-height: 400px;
-    }
-    
-    .left-page {
-        border-radius: 10px 10px 0 0;
-        border-right: 1px solid #999;
-        border-bottom: 1px solid #999;
-    }
-    
-    .right-page {
-        border-radius: 0 0 10px 10px;
-        border-left: 1px solid #999;
-        border-top: none;
-    }
+/* Estados travados */
+.locked .diary-title,
+.locked .diary-textarea {
+    background-color: rgba(0, 0, 0, 0.05);
+    pointer-events: none;
+    color: #555;
 }
 
-@media (max-width: 600px) {
-    .header {
-        flex-direction: column;
-        align-items: center;
+/* Responsividade */
+@media (max-width: 768px) {
+    .diary-interface {
+        grid-template-columns: 1fr;
+        grid-template-areas: 
+            "character"
+            "options"
+            "diary";
     }
     
-    .character {
-        margin-right: 0;
-        margin-bottom: 1rem;
-    }
-    
-    .nav-options {
+    .options-container {
         justify-content: center;
     }
     
-    .book {
+    .modal-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .modal-actions {
         width: 100%;
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 480px) {
+    .book-cover {
+        width: 300px;
+        height: 450px;
+    }
+    
+    .cover-title {
+        font-size: 2.5rem;
+    }
+    
+    .diary-container {
+        padding: 15px;
+    }
+    
+    .diary-actions {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .save-status {
+        margin-left: 0;
     }
 }

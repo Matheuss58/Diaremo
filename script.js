@@ -3,11 +3,8 @@ let diaryData = {
     entries: {},
     events: {},
     settings: {
-        autoSave: 30000,
-        theme: 'gothic'
-    },
-    currentDate: new Date(),
-    currentPage: 0
+        autoSave: 30000
+    }
 };
 
 // Elementos DOM
@@ -15,23 +12,21 @@ const coverScreen = document.getElementById('cover-screen');
 const bookCover = document.getElementById('book-cover');
 const diaryInterface = document.getElementById('diary-interface');
 const diaryTextarea = document.getElementById('diary-entry');
+const diaryTitle = document.getElementById('diary-title');
 const saveStatus = document.getElementById('save-status');
 const currentDateEl = document.getElementById('current-date');
-const pageTitleInput = document.getElementById('page-title');
-const leftDateEl = document.getElementById('left-date');
-const leftTitleEl = document.getElementById('left-title');
-const leftTextEl = document.getElementById('left-text');
 const agendaModal = document.getElementById('agenda-modal');
 const calendarGrid = document.getElementById('calendar-grid');
 const agendaMonthEl = document.getElementById('agenda-month');
-const settingsModal = document.getElementById('settings-modal');
-const autoSaveSelect = document.getElementById('auto-save');
-const themeSelect = document.getElementById('theme');
+const eventModal = document.getElementById('event-modal');
+const eventForm = document.getElementById('event-form');
+const btnLock = document.getElementById('btn-lock');
+const btnUnlock = document.getElementById('btn-unlock');
 
 // Variáveis de controle
 let autoSaveInterval;
-let currentView = 'today';
 let agendaCurrentDate = new Date();
+let selectedDate = null;
 
 // Inicialização
 document.addEventListener('DOMContentLoaded', initApp);
@@ -53,29 +48,35 @@ function setupEventListeners() {
     
     // Botões de navegação
     document.getElementById('btn-agenda').addEventListener('click', openAgenda);
+    document.getElementById('btn-stats').addEventListener('click', showStats);
     document.getElementById('btn-backup').addEventListener('click', backupData);
     document.getElementById('btn-restore').addEventListener('click', restoreData);
-    document.getElementById('btn-settings').addEventListener('click', openSettings);
     
-    // Controles do livro
-    document.getElementById('btn-prev').addEventListener('click', showPreviousPage);
-    document.getElementById('btn-next').addEventListener('click', showNextPage);
-    document.getElementById('btn-lock').addEventListener('click', toggleLockPage);
-    document.getElementById('btn-save').addEventListener('click', saveEntry);
+    // Controles do diário
+    btnLock.addEventListener('click', lockPage);
+    btnUnlock.addEventListener('click', unlockPage);
     
     // Agenda
     document.getElementById('btn-prev-month').addEventListener('click', () => changeAgendaMonth(-1));
     document.getElementById('btn-next-month').addEventListener('click', () => changeAgendaMonth(1));
+    document.getElementById('btn-add-event').addEventListener('click', addNewEvent);
     document.getElementById('btn-close-agenda').addEventListener('click', closeAgenda);
     
-    // Configurações
-    document.getElementById('btn-save-settings').addEventListener('click', saveSettings);
-    document.getElementById('btn-close-settings').addEventListener('click', closeSettings);
+    // Eventos
+    document.getElementById('btn-cancel-event').addEventListener('click', closeEventModal);
+    eventForm.addEventListener('submit', saveEvent);
     
     // Salvamento ao digitar
-    diaryTextarea.addEventListener('input', debounce(saveEntry, 2000));
-    pageTitleInput.addEventListener('input', debounce(saveEntry, 2000));
+    diaryTextarea.addEventListener('input', handleInput);
+    diaryTitle.addEventListener('input', handleInput);
 }
+
+function handleInput() {
+    updateSaveStatus('Editando...');
+    debouncedSave();
+}
+
+const debouncedSave = debounce(saveEntry, 2000);
 
 function openDiary() {
     coverScreen.classList.add('hidden');
@@ -87,9 +88,6 @@ function updateDate() {
     const now = new Date();
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     currentDateEl.textContent = now.toLocaleDateString('pt-BR', options);
-    
-    const dateOptions = { day: 'numeric', month: 'long', year: 'numeric' };
-    leftDateEl.textContent = now.toLocaleDateString('pt-BR', dateOptions);
 }
 
 function getDateKey(date = new Date()) {
@@ -100,12 +98,6 @@ function loadData() {
     const savedData = localStorage.getItem('diaryData');
     if (savedData) {
         diaryData = JSON.parse(savedData);
-        
-        // Carregar configurações
-        if (diaryData.settings) {
-            autoSaveSelect.value = diaryData.settings.autoSave;
-            themeSelect.value = diaryData.settings.theme;
-        }
     }
 }
 
@@ -118,7 +110,7 @@ function loadTodayEntry() {
     const todayKey = getDateKey();
     
     if (diaryData.entries[todayKey]) {
-        pageTitleInput.value = diaryData.entries[todayKey].title || '';
+        diaryTitle.value = diaryData.entries[todayKey].title || '';
         diaryTextarea.value = diaryData.entries[todayKey].content || '';
         
         // Verificar se a página está travada
@@ -128,7 +120,7 @@ function loadTodayEntry() {
             unlockPage();
         }
     } else {
-        pageTitleInput.value = '';
+        diaryTitle.value = '';
         diaryTextarea.value = '';
         unlockPage();
     }
@@ -154,7 +146,7 @@ function saveEntry() {
         return false;
     }
     
-    diaryData.entries[todayKey].title = pageTitleInput.value;
+    diaryData.entries[todayKey].title = diaryTitle.value;
     diaryData.entries[todayKey].content = diaryTextarea.value;
     diaryData.entries[todayKey].updatedAt = new Date().toISOString();
     
@@ -166,46 +158,40 @@ function saveEntry() {
     return false;
 }
 
-function toggleLockPage() {
+function lockPage() {
     const todayKey = getDateKey();
     
     if (!diaryData.entries[todayKey]) {
         if (!saveEntry()) return;
     }
     
-    diaryData.entries[todayKey].locked = !diaryData.entries[todayKey].locked;
-    
-    if (diaryData.entries[todayKey].locked) {
-        lockPage();
-        updateSaveStatus('Página travada');
-    } else {
-        unlockPage();
-        updateSaveStatus('Página destravada');
-    }
-    
+    diaryData.entries[todayKey].locked = true;
     saveData();
-}
-
-function lockPage() {
+    
+    diaryTitle.setAttribute('readonly', true);
     diaryTextarea.setAttribute('readonly', true);
-    pageTitleInput.setAttribute('readonly', true);
-    document.getElementById('btn-lock').innerHTML = '<i class="fas fa-unlock"></i> Destravar Página';
+    btnLock.style.display = 'none';
+    btnUnlock.style.display = 'block';
+    diaryInterface.classList.add('locked');
+    
+    updateSaveStatus('Página travada');
 }
 
 function unlockPage() {
+    const todayKey = getDateKey();
+    
+    if (diaryData.entries[todayKey]) {
+        diaryData.entries[todayKey].locked = false;
+        saveData();
+    }
+    
+    diaryTitle.removeAttribute('readonly');
     diaryTextarea.removeAttribute('readonly');
-    pageTitleInput.removeAttribute('readonly');
-    document.getElementById('btn-lock').innerHTML = '<i class="fas fa-lock"></i> Travar Página';
-}
-
-function showPreviousPage() {
-    // Implementar navegação para página anterior
-    updateSaveStatus('Funcionalidade de navegação em desenvolvimento');
-}
-
-function showNextPage() {
-    // Implementar navegação para próxima página
-    updateSaveStatus('Funcionalidade de navegação em desenvolvimento');
+    btnLock.style.display = 'block';
+    btnUnlock.style.display = 'none';
+    diaryInterface.classList.remove('locked');
+    
+    updateSaveStatus('Página destravada');
 }
 
 function setupAutoSave() {
@@ -248,58 +234,52 @@ function renderAgenda() {
     const month = agendaCurrentDate.getMonth();
     
     // Atualizar título da agenda
-    const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junio',
+    const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
                        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
     agendaMonthEl.textContent = `${monthNames[month]} ${year}`;
     
     // Limpar grade do calendário
     calendarGrid.innerHTML = '';
     
-    // Adicionar cabeçalhos dos dias da semana
-    const weekdays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-    weekdays.forEach(day => {
-        const cell = document.createElement('div');
-        cell.textContent = day;
-        cell.style.fontWeight = 'bold';
-        calendarGrid.appendChild(cell);
-    });
-    
     // Obter primeiro dia do mês e último dia do mês
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
     
-    // Preencher dias vazios no início
+    // Preencher dias vazios no início (do mês anterior)
     for (let i = 0; i < firstDay.getDay(); i++) {
-        calendarGrid.appendChild(document.createElement('div'));
+        const emptyDay = document.createElement('div');
+        emptyDay.className = 'calendar-day other-month';
+        calendarGrid.appendChild(emptyDay);
     }
     
     // Preencher os dias do mês
     const today = new Date();
     
     for (let day = 1; day <= daysInMonth; day++) {
-        const cell = document.createElement('div');
-        cell.className = 'calendar-cell';
-        cell.textContent = day;
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day';
+        dayElement.textContent = day;
         
         const dateKey = `${year}-${month + 1}-${day}`;
         
         // Verificar se é o dia atual
         if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
-            cell.classList.add('current-day');
+            dayElement.classList.add('current-day');
         }
         
         // Verificar se há entrada neste dia
         if (diaryData.entries[dateKey]) {
-            cell.classList.add('has-entry');
+            dayElement.classList.add('has-entry');
         }
         
-        cell.addEventListener('click', () => showDayDetails(dateKey));
-        calendarGrid.appendChild(cell);
+        dayElement.addEventListener('click', () => showDayDetails(dateKey));
+        calendarGrid.appendChild(dayElement);
     }
 }
 
 function showDayDetails(dateKey) {
+    selectedDate = dateKey;
     const dayEvents = document.getElementById('day-events');
     dayEvents.innerHTML = '';
     
@@ -328,7 +308,7 @@ function showDayDetails(dateKey) {
     // Adicionar eventos da agenda (se houver)
     if (diaryData.events[dateKey] && diaryData.events[dateKey].length > 0) {
         const eventsTitle = document.createElement('h5');
-        eventsTitle.textContent = 'Eventos:';
+        eventsTitle.textContent = 'Compromissos:';
         eventsTitle.style.marginTop = '1rem';
         dayEvents.appendChild(eventsTitle);
         
@@ -336,40 +316,86 @@ function showDayDetails(dateKey) {
             const eventDiv = document.createElement('div');
             eventDiv.innerHTML = `
                 <p><strong>${event.time}</strong> - ${event.title}</p>
+                ${event.description ? `<p>${event.description}</p>` : ''}
             `;
             eventDiv.style.marginBottom = '0.5rem';
+            eventDiv.style.padding = '0.5rem';
+            eventDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.1)';
+            eventDiv.style.borderRadius = '4px';
             dayEvents.appendChild(eventDiv);
         });
     }
-}
-
-function openSettings() {
-    // Carregar configurações atuais
-    autoSaveSelect.value = diaryData.settings.autoSave;
-    themeSelect.value = diaryData.settings.theme;
     
-    settingsModal.style.display = 'flex';
+    // Botão para adicionar evento neste dia
+    const addEventBtn = document.createElement('button');
+    addEventBtn.textContent = 'Adicionar Evento';
+    addEventBtn.className = 'btn';
+    addEventBtn.style.marginTop = '1rem';
+    addEventBtn.addEventListener('click', () => {
+        document.getElementById('event-date').value = dateKey.split('-').join('-');
+        openEventModal();
+    });
+    dayEvents.appendChild(addEventBtn);
 }
 
-function closeSettings() {
-    settingsModal.style.display = 'none';
+function addNewEvent() {
+    document.getElementById('event-date').value = '';
+    document.getElementById('event-time').value = '';
+    document.getElementById('event-title').value = '';
+    document.getElementById('event-description').value = '';
+    openEventModal();
 }
 
-function saveSettings() {
-    diaryData.settings.autoSave = parseInt(autoSaveSelect.value);
-    diaryData.settings.theme = themeSelect.value;
+function openEventModal() {
+    eventModal.style.display = 'flex';
+}
+
+function closeEventModal() {
+    eventModal.style.display = 'none';
+}
+
+function saveEvent(e) {
+    e.preventDefault();
+    
+    const date = document.getElementById('event-date').value;
+    const time = document.getElementById('event-time').value;
+    const title = document.getElementById('event-title').value;
+    const description = document.getElementById('event-description').value;
+    
+    if (!date || !title) {
+        alert('Data e título são obrigatórios!');
+        return;
+    }
+    
+    const dateKey = date.replace(/-/g, '-');
+    
+    if (!diaryData.events[dateKey]) {
+        diaryData.events[dateKey] = [];
+    }
+    
+    diaryData.events[dateKey].push({
+        time,
+        title,
+        description,
+        createdAt: new Date().toISOString()
+    });
     
     saveData();
-    setupAutoSave();
-    applyTheme();
+    closeEventModal();
     
-    settingsModal.style.display = 'none';
-    updateSaveStatus('Configurações salvas');
+    if (agendaModal.style.display === 'flex') {
+        renderAgenda();
+        if (selectedDate === dateKey) {
+            showDayDetails(dateKey);
+        }
+    }
+    
+    updateSaveStatus('Evento salvo com sucesso');
 }
 
-function applyTheme() {
-    // Implementar mudança de tema
-    document.body.setAttribute('data-theme', diaryData.settings.theme);
+function showStats() {
+    // Implementar estatísticas
+    updateSaveStatus('Estatísticas em desenvolvimento');
 }
 
 function backupData() {
@@ -400,7 +426,6 @@ function restoreData() {
                 localStorage.setItem('diaryData', JSON.stringify(diaryData));
                 loadTodayEntry();
                 setupAutoSave();
-                applyTheme();
                 updateSaveStatus('Dados restaurados com sucesso!');
             } catch (err) {
                 updateSaveStatus('Erro ao restaurar dados: arquivo inválido');
